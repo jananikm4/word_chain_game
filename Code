@@ -1,0 +1,40 @@
+import streamlit as st
+import random, requests
+
+WORD_LIST = ['apple','elephant','tiger','rabbit','rose','snake','engine','echo','orange']
+
+def is_valid_word(word):
+    r = requests.get(f"https://api.dictionaryapi.dev/api/v2/entries/en/{word}")
+    return r.status_code == 200
+
+if "current_word" not in st.session_state:
+    st.session_state.current_word = random.choice(WORD_LIST)
+    st.session_state.score = 0
+    st.session_state.used = [st.session_state.current_word]
+
+st.title("🧠 Word Chain Game")
+st.write(f"Current word: **{st.session_state.current_word}**")
+required = st.session_state.current_word[-1]
+st.write(f"Next word must start with: **{required.upper()}**")
+
+user_word = st.text_input("Your word").strip().lower()
+if st.button("Submit"):
+    if not user_word:
+        st.warning("Enter a word!")
+    elif user_word in st.session_state.used:
+        st.error("Word already used.")
+    elif not user_word.startswith(required):
+        st.error(f"Word must start with {required.upper()}")
+    elif not is_valid_word(user_word):
+        st.error("Not a valid English word.")
+    else:
+        st.session_state.score += 1
+        st.session_state.used.append(user_word)
+        next_word = random.choice([w for w in WORD_LIST if w.startswith(user_word[-1]) and w not in st.session_state.used]) if any(w.startswith(user_word[-1]) for w in WORD_LIST) else None
+        if not next_word:
+            st.success(f"You win! Final score: {st.session_state.score}")
+        else:
+            st.session_state.current_word = next_word
+            st.session_state.used.append(next_word)
+            st.info(f"My word: {next_word}")
+st.write(f"Score: {st.session_state.score}")
