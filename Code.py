@@ -20,7 +20,7 @@ def is_valid_word(word: str) -> bool:
         return True
 
 
-def bot_pick(letter: str, used: set) -> str | None:
+def bot_pick(letter: str, used_list: list) -> str | None:
     """
     Ask the dictionary API for real words starting with `letter`.
     Falls back to a curated seed list if the API doesn't cooperate.
@@ -34,15 +34,18 @@ def bot_pick(letter: str, used: set) -> str | None:
         "yarn", "nail", "lake", "kettle",
     ]
 
+    # Convert to set internally for O(1) lookups during selection
+    used_set = set(used_list)
+
     # First try seeds (fast, offline)
-    candidates = [w for w in SEEDS if w.startswith(letter) and w not in used]
+    candidates = [w for w in SEEDS if w.startswith(letter) and w not in used_set]
     if candidates:
         return random.choice(candidates)
 
     # Try the API to find a real word starting with `letter` via simple prefixes
     attempts = [letter + suffix for suffix in ["at", "an", "en", "in", "on", "est", "ight", "ound"]]
     for attempt in attempts:
-        if attempt not in used and is_valid_word(attempt):
+        if attempt not in used_set and is_valid_word(attempt):
             return attempt
 
     return None  # Bot is genuinely stuck — player wins!
@@ -53,7 +56,7 @@ def reset_game():
     start = random.choice(seed_words)
     st.session_state.current_word = start
     st.session_state.score = 0
-    st.session_state.used = {start}
+    st.session_state.used = [start]  # Maintained as a list to preserve chronological order
     st.session_state.message = ("info", f"Game started! First word is **{start.upper()}**.")
     st.session_state.game_over = False
     st.session_state.input_key = st.session_state.get("input_key", 0) + 1
@@ -144,7 +147,7 @@ if not st.session_state.game_over:
             # Dynamic Scoring: Reward longer words!
             gained_points = len(user_word)
             st.session_state.score += gained_points
-            st.session_state.used.add(user_word)
+            st.session_state.used.append(user_word)
             st.session_state.current_word = user_word
             st.session_state.input_key += 1 
 
@@ -161,7 +164,7 @@ if not st.session_state.game_over:
                 )
                 st.session_state.game_over = True
             else:
-                st.session_state.used.add(bot_word)
+                st.session_state.used.append(bot_word)
                 st.session_state.current_word = bot_word
                 st.session_state.message = (
                     "info",
@@ -177,10 +180,10 @@ else:
         reset_game()
         st.rerun()
 
-# ── Dynamic Word Chain History ────────────────────────────────────────────────
+# ── Chronological Word Chain History ──────────────────────────────────────────
 st.write("")
 with st.expander("📜 Word Chain History", expanded=True):
     if st.session_state.used:
-        st.write(" ➡️ ".join([f"**{w.upper()}**" for w in sorted(st.session_state.used)]))
+        st.write(" ➡️ ".join([f"**{w.upper()}**" for w in st.session_state.used]))
     else:
         st.info("No words logged yet.")
