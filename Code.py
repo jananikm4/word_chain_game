@@ -80,9 +80,8 @@ st.title("🧠 Word Chain Game")
 
 # Updated caption to explain the scoring system clearly
 st.caption(
-    "Chain real English words — each word must start with the last letter of the previous one. "
-    "\n💡 **Scoring:** You earn 1 point per letter (longer words give more points!)."
-)
+    "Chain real English words — each word must start with the last letter of the previous one. ")
+    st.caption("💡 **Scoring:** You earn 1 point per letter (longer words give more points!).")
 
 # Game stats panel
 col1, col2, col3, col4 = st.columns(4)
