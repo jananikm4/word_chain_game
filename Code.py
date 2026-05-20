@@ -77,7 +77,12 @@ if st.session_state.score > st.session_state.high_score:
 
 # ── UI Layout ─────────────────────────────────────────────────────────────────
 st.title("🧠 Word Chain Game")
-st.caption("Chain real English words — each word must start with the last letter of the previous one.")
+
+# Updated caption to explain the scoring system clearly
+st.caption(
+    "Chain real English words — each word must start with the last letter of the previous one. "
+    "💡 **Scoring:** You earn 1 point per letter (longer words give more points!)."
+)
 
 # Game stats panel
 col1, col2, col3, col4 = st.columns(4)
