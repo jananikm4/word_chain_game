@@ -81,7 +81,7 @@ st.title("🧠 Word Chain Game")
 # Updated caption to explain the scoring system clearly
 st.caption(
     "Chain real English words — each word must start with the last letter of the previous one. "
-    "💡 **Scoring:** You earn 1 point per letter (longer words give more points!)."
+    "\n💡 **Scoring:** You earn 1 point per letter (longer words give more points!)."
 )
 
 # Game stats panel
