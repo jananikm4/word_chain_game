@@ -1,4 +1,4 @@
-import streamlit as st
+import streamlit as str
 import random
 import requests
 import time
@@ -91,11 +91,11 @@ def reset_game():
     st.session_state.input_key = st.session_state.get("input_key", 0) + 1
 
 
-# ── State Init ────────────────────────────────────────────────────────────────
+# ── State Init & Safety Checks ────────────────────────────────────────────────
 if "high_score" not in st.session_state:
     st.session_state.high_score = 0
 
-if "current_word" not in st.session_state:
+if "current_word" not in st.session_state or "freeze_active" not in st.session_state:
     st.session_state.input_key = 0
     reset_game()
 
@@ -174,7 +174,7 @@ if not st.session_state.game_over:
     
     # Rare letter visual warning indicator
     if required_letter in ['Z', 'Q', 'X', 'J', 'K']:
-        st.markdown(f"Next word must start with: **:{random.choice(['red','orange','green'])}[{required_letter}]** 🔥 **3x MULTIPLIER ACTIVE!**")
+        st.markdown(f"Next word must start with: **:orange[{required_letter}]** 🔥 **3x MULTIPLIER ACTIVE!**")
     else:
         st.markdown(f"Next word must start with: **{required_letter}**")
 
