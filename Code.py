@@ -82,7 +82,7 @@ def reset_game():
     st.session_state.current_word = start
     st.session_state.score = 0
     st.session_state.used = [start]
-    st.session_state.message = ("info", f"💥 Game started! First word is **{start.upper()}**.")
+    st.session_state.message = ("info", f"💥 Game started! First word is **{start.upper()}**. Reach **30 points** to win!")
     st.session_state.game_over = False
     st.session_state.skips_left = 1
     st.session_state.freezes_left = 1
@@ -113,12 +113,12 @@ else:
 
 # ── UI Layout ─────────────────────────────────────────────────────────────────
 st.title("🧠 Word Chain Game Extreme")
-st.caption("Chain English words together. Watch out for the clock and maximize points with rare letters!")
+st.caption("Chain English words together. Watch out for the clock, use rare letters, and **score 30 points to win!**")
 
 # Game stats panel
 col1, col2, col3, col4 = st.columns(4)
 col1.metric("Current Word", st.session_state.current_word.upper())
-col2.metric("Your Score", st.session_state.score)
+col2.metric("Your Score (Goal: 30)", f"{st.session_state.score} / 30")
 col3.metric("🏆 High Score", st.session_state.high_score)
 col4.metric("Words Chain Length", len(st.session_state.used))
 
@@ -219,18 +219,27 @@ if not st.session_state.game_over:
             st.session_state.input_key += 1 
             st.session_state.freeze_active = False # Unfreeze timer context if active
 
-            # Trigger celebration on high-score breakthroughs
-            if st.session_state.score > st.session_state.high_score and st.session_state.high_score > 0:
-                st.balloons()
-            
+            # Update High Score if broken
             if st.session_state.score > st.session_state.high_score:
                 st.session_state.high_score = st.session_state.score
 
-            # Bot counter-attack step
+            # ── VICTORY CONDITION CHECK (30 Points) ───────────────────────────
+            if st.session_state.score >= 30:
+                st.balloons()
+                bonus_msg = " 🔥 [RARE MULTIPLIER 3x!]" if multiplied else ""
+                st.session_state.message = (
+                    "success",
+                    f"🏆 **VICTORY!** You scored **{st.session_state.score}** points and beat the game! Amazing job! 🎉",
+                )
+                st.session_state.game_over = True
+                st.rerun()
+
+            # Bot counter-attack step (Only runs if player hasn't won yet)
             bot_letter = user_word[-1]
             bot_word = bot_pick(bot_letter, st.session_state.used)
 
             if bot_word is None:
+                st.balloons()
                 st.session_state.message = (
                     "success",
                     f"🎉 **You win!** I couldn't find an available word starting with **{bot_letter.upper()}**. Final score: **{st.session_state.score}**",
@@ -250,8 +259,12 @@ if not st.session_state.game_over:
             st.rerun()
 
 else:
-    # Game over display screen
-    st.markdown("### 🛑 Game Over")
+    # Game over / Victory display screen
+    if st.session_state.score >= 30:
+        st.markdown("### 🏆 Victory achieved!")
+    else:
+        st.markdown("### 🛑 Game Over")
+        
     if st.button("Play Again 🔄", use_container_width=True):
         reset_game()
         st.rerun()
